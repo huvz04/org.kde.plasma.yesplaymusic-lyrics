@@ -19,16 +19,42 @@ PlasmoidItem {
     compactRepresentation: fullRepresentation
     preferredRepresentation: Plasmoid.fullRepresentation
     fullRepresentation: Item {
-        Layout.preferredWidth: lyric_line.implicitWidth
-        Layout.preferredHeight: lyric_line.implicitWidth
-        Label {
-            id: lyric_line;
-            text: "";
-            color: config_text_color;
+        id: fullRep
+        // implicitWidth: lyric_line.implicitWidth
+        // implicitHeight: lyric_line.implicitHeight
+        Layout.preferredWidth: Math.max(lyric_line.implicitWidth, lyric_second_line.implicitWidth) + 20 // 添加一些额外的空间
+        Layout.preferredHeight: contentColumn.implicitHeight + 10
+        ColumnLayout {
+            id: contentLayout
             anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            font: config_text_font || theme.defaultFont
+            spacing: 5
+            Label {
+                id: lyric_line;
+                // Layout.alignment: Qt.AlignHCenter
+                text: root.lyric_line_text
+                color: config_text_color
+                verticalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignHCenter
+                font: config_text_font || theme.defaultFont
+
+            }
+
+            Label {
+                id: lyric_second_line
+                // Layout.alignment: Qt.AlignHCenter
+                visible: plasmoid.configuration.second_language !== "disbale"
+                opacity: visible ? 1 : 0
+                text: root.lyric_second_line_text
+                color: config_text_color
+                verticalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignHCenter
+                font: config_text_font || theme.defaultFont
+
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 250 }
+                }
+            }
         }
 
         Timer {
@@ -51,7 +77,7 @@ PlasmoidItem {
         property int timeout_count: 0
 
         function get_lyric() {
-            var xhr= new XMLHttpRequest();
+            var xhr = new XMLHttpRequest();
             xhr.open('GET', 'http://127.0.0.1:27232/player', false);
             xhr.send(null);
             if (200 == xhr.status) {
@@ -67,6 +93,7 @@ PlasmoidItem {
                 }
                 if (timeout_count >= 5) {
                     lyric_line.text = ""
+                    lyric_second_line.text = ""
                     id_original_cache = 0
                     id_translated_cache = 0
                     id_romaji_cache = 0
@@ -85,7 +112,7 @@ PlasmoidItem {
                 real_time = lyric_obj.lyrics_all[0].timestamp
             }
             for (var i = 0; i < lyric_obj.length; i++) {
-                if ((last_time <= real_time) &&  (real_time < lyric_obj.lyrics_all[i].timestamp)) {
+                if ((last_time <= real_time) && (real_time < lyric_obj.lyrics_all[i].timestamp)) {
                     target_line = last_text
                     flag = true
                 }
@@ -165,11 +192,11 @@ PlasmoidItem {
 
 
             if (
-                    !valid_original_cache
+                !valid_original_cache
                 || (!valid_translated_cache && !no_translated_cache)
                 || (!valid_romaji_cache && !no_romaji_cache)
-                ) {
-                var xhr= new XMLHttpRequest();
+            ) {
+                var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'http://127.0.0.1:10754/lyric?id=' + tracker.id)
                 xhr.send()
                 xhr.onreadystatechange = function () {
@@ -184,19 +211,19 @@ PlasmoidItem {
                          */
                         var lyrics = extract_lyrics(raw_json)
                         /* cache lyric */
-                        if (lyrics.original != "") {
+                        if (lyrics.original !== "") {
                             lyric_original_cache = lyrics.original
                             id_original_cache = tracker.id
                             valid_original_cache = true
                         }
-                        if (lyrics.translated != "") {
+                        if (lyrics.translated !== "") {
                             lyric_translated_cache = lyrics.translated
                             id_translated_cache = tracker.id
                             valid_translated_cache = true
                         } else if (valid_original_cache) {
                             no_translated_cache = true
                         }
-                        if (lyrics.romaji != "") {
+                        if (lyrics.romaji !== "") {
                             lyric_romaji_cache = lyrics.romaji
                             id_romaji_cache = tracker.id
                             valid_romaji_cache = true
@@ -229,7 +256,7 @@ PlasmoidItem {
                 } else if (cfg_second_language === "translated" && valid_translated_cache) {
                     second_lyrics = lyric_translated_cache
                     second_type = "translated"
-                } else if (cfg_second_language === "original"){
+                } else if (cfg_second_language === "original") {
                     second_lyrics = lyric_original_cache
                     second_type = "original"
                 } else {
@@ -239,25 +266,7 @@ PlasmoidItem {
                 var ret_lyric = get_lyric_by_time(target_lyrics, tracker.progress)
 
                 if (ret_lyric === "" || ret_lyric === null || ret_lyric === undefined) {
-                    switch(target_type) {
-                    case "original":
-                        valid_original_cache = false
-                        return
-                    case "translated":
-                        valid_translated_cache = false
-                        return
-                    case "romaji":
-                        valid_romaji_cache = false
-                        return
-                    }
-                }
-
-                var line = ret_lyric
-
-                if (cfg_second_language != "disbale" && second_type != target_type) {
-                    var second_lyric = get_lyric_by_time(second_lyrics, tracker.progress)
-                    if (second_lyric === "" || second_lyric === null || second_lyric === undefined) {
-                        switch(second_type) {
+                    switch (target_type) {
                         case "original":
                             valid_original_cache = false
                             return
@@ -267,11 +276,32 @@ PlasmoidItem {
                         case "romaji":
                             valid_romaji_cache = false
                             return
+                    }
+                }
+
+                var line = ret_lyric
+
+                if (cfg_second_language !== "disbale" && second_type !== target_type) {
+                    var second_lyric = get_lyric_by_time(second_lyrics, tracker.progress)
+                    if (second_lyric === "" || second_lyric === null || second_lyric === undefined) {
+                        switch (second_type) {
+                            case "original":
+                                valid_original_cache = false
+                                return
+                            case "translated":
+                                valid_translated_cache = false
+                                return
+                            case "romaji":
+                                valid_romaji_cache = false
+                                return
                         }
                     }
-                    line = line + " " + second_lyric
+                    lyric_second_line.text = second_lyric ;
                 }
-                lyric_line.text = line
+                else {
+                    lyric_second_line.text = "" ;
+                }
+                lyric_line.text = line ;
             }
         }
 
@@ -319,12 +349,12 @@ PlasmoidItem {
                 }
             }
             raw_json = raw_json.substring(begin, end)
-            
+
             if (!(raw_json == undefined || raw_json == null || raw_json == '')) {
                 // replace escape character
-                var replace = raw_json.replace(/\\n/g,'\n')
-                replace = replace.replace(/\\\"/g,"\"")
-                replace = replace.replace(/\\\\/g,"\\")
+                var replace = raw_json.replace(/\\n/g, '\n')
+                replace = replace.replace(/\\\"/g, "\"")
+                replace = replace.replace(/\\\\/g, "\\")
                 return replace
             } else {
                 return ""
