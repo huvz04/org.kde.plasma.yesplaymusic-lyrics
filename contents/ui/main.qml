@@ -281,7 +281,7 @@ PlasmoidItem {
 
                 var line = ret_lyric
 
-                if (cfg_second_language !== "disbale" && second_type !== target_type) {
+                if (cfg_second_language != "disbale" && second_type != target_type) {
                     var second_lyric = get_lyric_by_time(second_lyrics, tracker.progress)
                     if (second_lyric === "" || second_lyric === null || second_lyric === undefined) {
                         switch (second_type) {
@@ -296,7 +296,7 @@ PlasmoidItem {
                                 return
                         }
                     }
-                    lyric_second_line.text = second_lyric ;
+                    line = line + " " + second_lyric
                 }
                 else {
                     lyric_second_line.text = "" ;
