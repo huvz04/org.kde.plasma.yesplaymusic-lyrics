@@ -20,17 +20,14 @@ PlasmoidItem {
     preferredRepresentation: Plasmoid.fullRepresentation
     fullRepresentation: Item {
         id: fullRep
-        // implicitWidth: lyric_line.implicitWidth
-        // implicitHeight: lyric_line.implicitHeight
-        Layout.preferredWidth: Math.max(lyric_line.implicitWidth, lyric_second_line.implicitWidth) + 20 // 添加一些额外的空间
-        Layout.preferredHeight: contentColumn.implicitHeight + 10
+        implicitWidth: lyric_line.implicitWidth
+        implicitHeight: lyric_line.implicitHeight
         ColumnLayout {
             id: contentLayout
             anchors.fill: parent
             spacing: 5
             Label {
                 id: lyric_line;
-                // Layout.alignment: Qt.AlignHCenter
                 text: root.lyric_line_text
                 color: config_text_color
                 verticalAlignment: Text.AlignHCenter
@@ -41,8 +38,7 @@ PlasmoidItem {
 
             Label {
                 id: lyric_second_line
-                // Layout.alignment: Qt.AlignHCenter
-                visible: plasmoid.configuration.second_language !== "disbale"
+                visible: plasmoid.configuration.second_language !== "disable"
                 opacity: visible ? 1 : 0
                 text: root.lyric_second_line_text
                 color: config_text_color
@@ -281,7 +277,7 @@ PlasmoidItem {
 
                 var line = ret_lyric
 
-                if (cfg_second_language != "disbale" && second_type != target_type) {
+                if (cfg_second_language != "disable" && second_type != target_type) {
                     var second_lyric = get_lyric_by_time(second_lyrics, tracker.progress)
                     if (second_lyric === "" || second_lyric === null || second_lyric === undefined) {
                         switch (second_type) {

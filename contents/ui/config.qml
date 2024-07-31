@@ -166,7 +166,7 @@ KCM.SimpleKCM {
                 QtControls.RadioButton {
                     text: "disable"
                     checked: (second_language_text.text === text) || (second_language_text.text === "")
-                    onClicked: second_language_text.text = "disbale"
+                    onClicked: second_language_text.text = "disable"
                 }
                 QtControls.RadioButton {
                     text: "original"
