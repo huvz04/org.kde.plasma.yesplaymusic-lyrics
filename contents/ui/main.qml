@@ -15,7 +15,7 @@ PlasmoidItem {
     readonly property string config_text_font: Plasmoid.configuration.text_font
     readonly property string cfg_first_language: Plasmoid.configuration.first_language
     readonly property string cfg_second_language: Plasmoid.configuration.second_language
-
+    readonly property string cfg_second_language_wrapping: Plasmoid.configuration.second_language_wrapping
     compactRepresentation: fullRepresentation
     preferredRepresentation: Plasmoid.fullRepresentation
     fullRepresentation: Item {
@@ -27,6 +27,7 @@ PlasmoidItem {
             anchors.fill: parent
             spacing: 5
             Label {
+                Layout.alignment: Qt.AlignHCenter
                 id: lyric_line;
                 text: root.lyric_line_text
                 color: config_text_color
@@ -37,8 +38,9 @@ PlasmoidItem {
             }
 
             Label {
+                Layout.alignment: Qt.AlignHCenter
                 id: lyric_second_line
-                visible: plasmoid.configuration.second_language !== "disable"
+                visible: plasmoid.configuration.second_language_wrapping !== "disable"
                 opacity: visible ? 1 : 0
                 text: root.lyric_second_line_text
                 color: config_text_color
@@ -61,9 +63,9 @@ PlasmoidItem {
         property string lyric_original_cache: ''
         property string lyric_translated_cache: ''
         property string lyric_romaji_cache: ''
-        property int id_original_cache: 0
-        property int id_translated_cache: 0
-        property int id_romaji_cache: 0
+        property real id_original_cache: 0
+        property real id_translated_cache: 0
+        property real id_romaji_cache: 0
         property bool valid_original_cache: false
         property bool valid_translated_cache: false
         property bool valid_romaji_cache: false
@@ -169,7 +171,9 @@ PlasmoidItem {
              *
              * we can use lrc.lyric
              */
-
+            lyric_line.text =tracker.name
+            lyric_second_line.text = tracker.artist
+            console.log(`b1=======${tracker.id} ::  ${id_original_cache}==========`);
             if (tracker.id != id_original_cache) {
                 lyric_original_cache = ""
                 id_original_cache = -1
@@ -209,17 +213,19 @@ PlasmoidItem {
                         /* cache lyric */
                         if (lyrics.original !== "") {
                             lyric_original_cache = lyrics.original
-                            id_original_cache = tracker.id
+                            id_original_cache = Number(tracker.id)
+                            console.log(`1=======id_original_cache = ${id_original_cache}==========`);
                             valid_original_cache = true
                         }
-                        if (lyrics.translated !== "") {
+
+                        if (lyrics.translated != "") {
                             lyric_translated_cache = lyrics.translated
                             id_translated_cache = tracker.id
                             valid_translated_cache = true
                         } else if (valid_original_cache) {
                             no_translated_cache = true
                         }
-                        if (lyrics.romaji !== "") {
+                        if (lyrics.romaji != "") {
                             lyric_romaji_cache = lyrics.romaji
                             id_romaji_cache = tracker.id
                             valid_romaji_cache = true
@@ -229,7 +235,7 @@ PlasmoidItem {
                     }
                 }
             }
-
+            console.log(`2=======${valid_original_cache}::${lyric_original_cache.length}==========`);
             if (valid_original_cache) {
                 // select original tor other types
                 var target_lyrics = ""
@@ -258,9 +264,7 @@ PlasmoidItem {
                 } else {
                     second_type = target_type
                 }
-
                 var ret_lyric = get_lyric_by_time(target_lyrics, tracker.progress)
-
                 if (ret_lyric === "" || ret_lyric === null || ret_lyric === undefined) {
                     switch (target_type) {
                         case "original":
@@ -292,7 +296,10 @@ PlasmoidItem {
                                 return
                         }
                     }
-                    line = line + " " + second_lyric
+                    if(cfg_second_language_wrapping != "disable")
+                        lyric_second_line.text =  second_lyric
+                    else
+                        line = line + " " + second_lyric
                 }
                 else {
                     lyric_second_line.text = "" ;
@@ -319,7 +326,7 @@ PlasmoidItem {
                     return ""
             } else if (type === "translated") {
                 if (raw_json.indexOf("\"tlyric\":") != -1)
-                    begin = raw_json.indexOf("\"tlyric\":") + 9
+                        begin = raw_json.indexOf("\"tlyric\":") + 9
                 else
                     return ""
             } else {
@@ -375,7 +382,7 @@ PlasmoidItem {
              *      }],
              *      "alia": ["PS Vitaゲーム「Fate/hollow ataraxia」OPテーマ"],
              *      "pop": 40,
-             *      ......
+             *      ..  ....
              *      "progress":61.662793
              *  }
              *
@@ -384,7 +391,9 @@ PlasmoidItem {
 
             if (!(ypm_res == undefined || ypm_res == null || ypm_res == '')) {
                 var obj = JSON.parse(ypm_res);
-                return {id: obj.currentTrack.id, progress: obj.progress};
+                const names = obj.currentTrack.ar.map(artist => artist.name).join('/');
+                console.log("id:=>"+obj.currentTrack.id)
+                return {id: obj.currentTrack.id, progress: obj.progress,name: obj.currentTrack.name,artist: names};
             } else {
                 return {id: -1, progress: 0};
             }
