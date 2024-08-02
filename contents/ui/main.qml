@@ -27,7 +27,6 @@ PlasmoidItem {
             anchors.fill: parent
             spacing: 5
             Label {
-                Layout.alignment: Qt.AlignHCenter
                 id: lyric_line;
                 text: root.lyric_line_text
                 color: config_text_color
@@ -38,7 +37,6 @@ PlasmoidItem {
             }
 
             Label {
-                Layout.alignment: Qt.AlignHCenter
                 id: lyric_second_line
                 visible: plasmoid.configuration.second_language_wrapping !== "disable"
                 opacity: visible ? 1 : 0
@@ -173,7 +171,6 @@ PlasmoidItem {
              */
             lyric_line.text =tracker.name
             lyric_second_line.text = tracker.artist
-            console.log(`b1=======${tracker.id} ::  ${id_original_cache}==========`);
             if (tracker.id != id_original_cache) {
                 lyric_original_cache = ""
                 id_original_cache = -1
@@ -214,7 +211,6 @@ PlasmoidItem {
                         if (lyrics.original !== "") {
                             lyric_original_cache = lyrics.original
                             id_original_cache = Number(tracker.id)
-                            console.log(`1=======id_original_cache = ${id_original_cache}==========`);
                             valid_original_cache = true
                         }
 
@@ -235,7 +231,6 @@ PlasmoidItem {
                     }
                 }
             }
-            console.log(`2=======${valid_original_cache}::${lyric_original_cache.length}==========`);
             if (valid_original_cache) {
                 // select original tor other types
                 var target_lyrics = ""
@@ -392,7 +387,6 @@ PlasmoidItem {
             if (!(ypm_res == undefined || ypm_res == null || ypm_res == '')) {
                 var obj = JSON.parse(ypm_res);
                 const names = obj.currentTrack.ar.map(artist => artist.name).join('/');
-                console.log("id:=>"+obj.currentTrack.id)
                 return {id: obj.currentTrack.id, progress: obj.progress,name: obj.currentTrack.name,artist: names};
             } else {
                 return {id: -1, progress: 0};
