@@ -39,6 +39,10 @@
       <label>show second language for lyrics</label>
       <default>disable</default>
     </entry>
+    <entry name="text_align" type="string">
+      <label>text align for lyrics</label>
+      <default>Center</default>
+    </entry>
 
   </group>
 
